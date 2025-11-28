@@ -10,6 +10,7 @@
 ## Design decisions
 * Plain text to be bioinformatics-ready
 * Sometimes redundant to allow easier parsing
+* The overall structure is inspired by GFA
 
 ## Line types
 
