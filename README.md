@@ -23,6 +23,14 @@ A G-line also acts as declaration for its contained nodes.
 
 `G <component name> <node name> ...`
 
+### N-line
+
+Declare extra data for a graph node.
+This is entirely optional.
+If no metadata is present, it suffices to declare the nodes in a G-line.
+
+`N <node name> <extra data>`
+
 ### B-line
 
 Declare a block (i.e. a 2-connected component) with its contained nodes.
@@ -60,14 +68,17 @@ The `<node name>`s specify the virtual edge within the connected SPQR-tree nodes
 Declare a graph edge between a pair of graph nodes (i.e. a Q-node).
 The `<S/P/R-node name>` and the `<block name>` specify the SPQR-tree node and the block that contains this edge.
 The `<node name>`s are the endpoints of the edge.
+After one space after the last node name, there can be an arbitrary string (except for # and newline characters).
+This may be used to add e.g. metadata to the edge.
 
-`E <edge name> <S/P/R-node name> <block name> <node name> <node name>`
+`E <edge name> <S/P/R-node name> <block name> <node name> <node name> [optional extra data]`
 
 ## Incomplete example
 
 ```spqr
 # 1-connected components
 G G0 N0 N1 N2 N3 N4 N5 N6 # Declare a component G0 containing graph nodes N0-N6
+N N3 abc def ghi # Attach extra data to graph node N3
 
 # 2-connected components
 B B0 G0 N0 N1 N2 N3 N4 # Declare a block B0 inside component G0 containing graph nodes N0-N4
@@ -80,5 +91,6 @@ S S0 B0 N0 N1 N2 # Declare an S-node inside B0 containing graph nodes N0, N1 and
 P P0 B0 N0 N1 # Declare a P-node inside B0 containing graph nodes N0 and N1
 R R0 B0 N1 N2 N3 N4 # Declare an R-node inside B0 containing graph nodes N1, N2, N3 and N4
 V V0 S0 P0 N0 N1 # Declare a virtual edge V0 connecting SPQR-nodes S0 and P0 between graph nodes N0 and N1
-E E0 P0 B0 N0 N1 # Declare a graph edge E0 inside SPQR-node P0 and inside block B0 and between graph nodes N0 and N1
+E E0 P0 B0 N1 N2 # Declare a graph edge E0 inside SPQR-node P0 and inside block B0 and between graph nodes N1 and N2
+E E1 P0 B0 N2 N0 xyz jkl mno # Declare a graph edge E1 with extra data
 ```
