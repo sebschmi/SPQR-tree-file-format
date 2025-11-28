@@ -57,7 +57,7 @@ The `<node name>`s specify the virtual edge within the connected SPQR-tree nodes
 
 ### E-line
 
-Declare a graph edge between a pair of graph nodes.
+Declare a graph edge between a pair of graph nodes (i.e. a Q-node).
 The `<S/P/R-node name>` and the `<block name>` specify the SPQR-tree node and the block that contains this edge.
 The `<node name>`s are the endpoints of the edge.
 
