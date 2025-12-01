@@ -1,4 +1,4 @@
-# SPQR tree file format `.spqr`
+# SPQR tree file format `.spqr` v0.1
 
 ## Basics
 * When a line contains a #, then the rest of it is ignored
@@ -15,6 +15,13 @@
 ## Line types
 
 A `...` in examples specifies that the previous identifier type can occur multiple times.
+
+### H-line
+
+Each `.spqr` file has exactly one header line.
+It specifies the file format version, as well as a URL pointing to the format specification at that version.
+
+`H v0.1 https://github.com/sebschmi/SPQR-tree-file-format`
 
 ### G-line
 
@@ -81,6 +88,9 @@ This may be used to add e.g. metadata to the edge.
 ## Incomplete example
 
 ```spqr
+# Header
+H v0.1 https://github.com/sebschmi/SPQR-tree-file-format # The header line specifies the version of the file format and a URL pointing to a description of the format at this version
+
 # 1-connected components
 G G0 N0 N1 N2 N3 N4 N5 N6 # Declare a component G0 containing graph nodes N0-N6
 N N3 abc def ghi # Attach extra data to graph node N3
