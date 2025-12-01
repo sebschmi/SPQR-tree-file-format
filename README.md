@@ -59,9 +59,14 @@ The `<block name>` is the name of the block containing this SPQR-tree node.
 ### V-line
 
 Declare an SPQR-tree edge between a pair of SPQR-tree nodes.
-The `<node name>`s specify the virtual edge within the connected SPQR-tree nodes pertaining to this SPQR-tree edge.
+The SPQR-tree edge is between the two SPQR-tree nodes specified by the two `<S/P/R-node name>`s.
+Within these SPQR-tree nodes, the SPQR-tree edge connects to a virtual edge in their skeletons.
+This virtual edge is specified by its endpoints, the graph nodes specified by the two `<node name>`.
 
-`V <S/P/R-node name> <SPQR-tree node name> <node name> <node name>`
+Note that different SPQR-tree edges may share a pair of graph nodes within some SPQR-tree node.
+In this case, the SPQR tree is typically defined to contain parallel virtual edges.
+
+`V <SPQR tree edge name> <S/P/R-node name> <S/P/R-node name> <node name> <node name>`
 
 ### E-line
 
