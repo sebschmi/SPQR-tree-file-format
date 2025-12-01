@@ -22,7 +22,7 @@ A `...` in examples specifies that the previous identifier type can occur multip
 Each `.spqr` file has exactly one header line.
 It specifies the file format version, as well as a URL pointing to the format specification at that version.
 
-`H v0.1 https://github.com/sebschmi/SPQR-tree-file-format`
+`H v0.1 https://github.com/sebschmi/SPQR-tree-file-format [optional extra data]`
 
 ### G-line
 
@@ -86,6 +86,41 @@ This may be used to add e.g. metadata to the edge.
 
 `E <edge name> <S/P/R-node name> <block name> <node name> <node name> [optional extra data]`
 
+## Format for extra data
+
+Any extra data is a space-separated list of data items.
+A data item has the format `key:type:value`.
+Valid types are:
+
+Type | Description | Example
+-----|-------------|--------
+`i` | Integer | `abundance:i:15` `weight:i:-4`
+`f` | Float | `abundance:f:3.14` `x:f:1e-3` `y:f:-inf`
+`d` | Sign of a bidirected edge incidence in mathematical format (see below) | `E E0 P0 B0 N1 N2 N1:d:+ N2:d:-`
+`dgfa` | Sign of a bidirected edge incidence in GFA format (see below) | `E E0 P0 B0 N1 N2 N1:dgfa:+ N2:dgfa:+`
+<nobr>`s`</nobr> | String without spaces | `seq:s:ACTGTGAACC`
+<nobr>`s:<len>`</nobr> | String of length `<len>` bytes (spaces allowed) | `comment:s:16:SPQR trees rock!`
+`b64` | Base64 encoded binary blob | `data:b64:U1BRUiB0cmVlcyByb2NrIQ==`
+
+### Reserved keys
+
+Key + Type | Description | Example
+-----------|-------------|--------
+`seq:s` | A DNA, RNA or protein sequence associated with a node or edge | `seq:s:GGCTA`
+
+### Bidirected edge signs in mathematical format
+
+In mathematical format, bidirected graphs as interpreted as having undirected edges (see e.g. [Medvedev et al. 2007](https://link.springer.com/chapter/10.1007/978-3-540-74126-8_27)).
+A walk through such a bidirected graph changes sign at each node.
+
+### Bidirected edge signs in GFA format
+
+In GFA format, bidirected graphs are interpreted as having directed edges.
+When a walk enters a node with a `+`, it must leave it through an outgoing edge with a `+`.
+Implicitly, each `E` edge encodes two edges in this interpretation, one of which is in the opposite direction.
+For example, an edge `E E0 P0 B0 N1 N2 N1:dgfa:+ N2:dgfa:-` implicitly also represents the edge `E E0 P0 B0 N2 N1 N2:dgfa:+ N1:dgfa:-`.
+See the [GFA1 specification](https://gfa-spec.github.io/GFA-spec/GFA1.html#l-link-line) or the [GFA2 specification](https://gfa-spec.github.io/GFA-spec/GFA2.html#edge) for more details.
+
 ## Incomplete example
 
 ```spqr
@@ -94,7 +129,7 @@ H v0.1 https://github.com/sebschmi/SPQR-tree-file-format # The header line speci
 
 # 1-connected components
 G G0 N0 N1 N2 N3 N4 N5 N6 # Declare a component G0 containing graph nodes N0-N6
-N N3 abc def ghi # Attach extra data to graph node N3
+N N3 seq:s:GGCTA weight:f:3.14 # Attach extra data to graph node N3
 
 # 2-connected components
 B B0 G0 N0 N1 N2 N3 N4 # Declare a block B0 inside component G0 containing graph nodes N0-N4
@@ -108,5 +143,5 @@ P P0 B0 N0 N1 # Declare a P-node inside B0 containing graph nodes N0 and N1
 R R0 B0 N1 N2 N3 N4 # Declare an R-node inside B0 containing graph nodes N1, N2, N3 and N4
 V V0 S0 P0 N0 N1 # Declare a virtual edge V0 connecting SPQR-nodes S0 and P0 between graph nodes N0 and N1
 E E0 P0 B0 N1 N2 # Declare a graph edge E0 inside SPQR-node P0 and inside block B0 and between graph nodes N1 and N2
-E E1 P0 B0 N2 N0 xyz jkl mno # Declare a graph edge E1 with extra data
+E E1 P0 B0 N2 N0 N2:d:- N0:d:+ seq:s:AAGATA # Declare a graph edge E1 with extra data
 ```
