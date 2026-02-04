@@ -1,4 +1,4 @@
-# SPQR tree file format `.spqr` v0.1
+# SPQR tree file format `.spqr` v0.2
 
 ## Basics
 * When a line contains a #, then the rest of it is ignored
@@ -22,7 +22,7 @@ A `...` in examples specifies that the previous identifier type can occur multip
 Each `.spqr` file has exactly one header line.
 It specifies the file format version, as well as a URL pointing to the format specification at that version.
 
-`H v0.1 https://github.com/sebschmi/SPQR-tree-file-format [optional extra data]`
+`H v0.2 https://github.com/sebschmi/SPQR-tree-file-format [optional extra data]`
 
 ### G-line
 
@@ -79,12 +79,12 @@ In this case, the SPQR tree is typically defined to contain parallel virtual edg
 ### E-line
 
 Declare a graph edge between a pair of graph nodes (i.e. a Q-node).
-The `<S/P/R-node name>` and the `<block name>` specify the SPQR-tree node and the block that contains this edge.
+The `<S/P/R-node name>` specifies the SPQR-tree node that contains this edge.
 The `<node name>`s are the endpoints of the edge.
 After one space after the last node name, there can be an arbitrary string (except for # and newline characters).
 This may be used to add e.g. metadata to the edge.
 
-`E <edge name> <S/P/R-node name> <block name> <node name> <node name> [optional extra data]`
+`E <edge name> <S/P/R-node name> <node name> <node name> [optional extra data]`
 
 ## Format for extra data
 
@@ -125,7 +125,7 @@ See the [GFA1 specification](https://gfa-spec.github.io/GFA-spec/GFA1.html#l-lin
 
 ```spqr
 # Header
-H v0.1 https://github.com/sebschmi/SPQR-tree-file-format # The header line specifies the version of the file format and a URL pointing to a description of the format at this version
+H v0.2 https://github.com/sebschmi/SPQR-tree-file-format # The header line specifies the version of the file format and a URL pointing to a description of the format at this version
 
 # 1-connected components
 G G0 N0 N1 N2 N3 N4 N5 N6 # Declare a component G0 containing graph nodes N0-N6
@@ -142,6 +142,6 @@ S S0 B0 N0 N1 N2 # Declare an S-node inside B0 containing graph nodes N0, N1 and
 P P0 B0 N0 N1 # Declare a P-node inside B0 containing graph nodes N0 and N1
 R R0 B0 N1 N2 N3 N4 # Declare an R-node inside B0 containing graph nodes N1, N2, N3 and N4
 V V0 S0 P0 N0 N1 # Declare a virtual edge V0 connecting SPQR-nodes S0 and P0 between graph nodes N0 and N1
-E E0 P0 B0 N1 N2 # Declare a graph edge E0 inside SPQR-node P0 and inside block B0 and between graph nodes N1 and N2
-E E1 P0 B0 N2 N0 N2:d:- N0:d:+ seq:s:AAGATA # Declare a graph edge E1 with extra data
+E E0 P0 N1 N2 # Declare a graph edge E0 inside SPQR-node P0 and between graph nodes N1 and N2
+E E1 P0 N2 N0 N2:d:- N0:d:+ seq:s:AAGATA # Declare a graph edge E1 with extra data
 ```
