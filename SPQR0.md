@@ -1,4 +1,4 @@
-# SPQR tree file format `.spqr` v0.2
+# SPQR tree file format `.spqr` v0.3
 
 ## Basics
 * When a line contains a #, then the rest of it is ignored
@@ -6,6 +6,9 @@
 * Following the line type, each line is a list of space-separated identifiers that can be arbitrary ASCII
 * Identifiers must be globally unique. For example, if we declare a component G0, then we cannot declare another component G0, and also no node G0, ...
 * Things must be declared before they are used. For example, the G-line for declaring a component must be before all lines that refer to it
+* Connected components with only a single node contain no blocks or cut nodes
+* Blocks with at most two nodes contain no SPQR nodes or virtual edges
+* Edges in blocks with at most two nodes are assigned to their block instead of their containing SPQR node
 
 ## Design decisions
 * Plain text to be bioinformatics-ready
@@ -21,7 +24,7 @@ A `...` in examples specifies that the previous identifier type can occur multip
 Each `.spqr` file has exactly one header line.
 It specifies the file format version, as well as a URL pointing to the format specification at that version.
 
-`H v0.2 https://github.com/sebschmi/SPQR-tree-file-format [optional extra data]`
+`H v0.3 https://github.com/sebschmi/SPQR-tree-file-format [optional extra data]`
 
 ### G-line
 
@@ -41,6 +44,7 @@ If no metadata is present, it suffices to declare the nodes in a G-line.
 ### B-line
 
 Declare a block (i.e. a 2-connected component) with its contained nodes.
+Blocks exist only for connected components with at least two nodes.
 The `<component name>` is the name of the component containing this block.
 
 `B <block name> <component name> <node name> ...`
@@ -48,6 +52,7 @@ The `<component name>` is the name of the component containing this block.
 ### C-line
 
 Declare a cut node that connects a set of blocks.
+Cut nodes exist only for connected components with at least two nodes.
 The set of blocks must be exactly the blocks that contain the node.
 
 `C <node name> <block name> ...`
@@ -55,6 +60,7 @@ The set of blocks must be exactly the blocks that contain the node.
 ### S/P/R-line
 
 Declare an SPQR-tree node of type S, P or R with its contained nodes.
+SPQR-tree nodes exist only for blocks with at least three nodes.
 The `<block name>` is the name of the block containing this SPQR-tree node.
 
 `S <S-node name> <block name> <node name> ...`
@@ -66,6 +72,7 @@ The `<block name>` is the name of the block containing this SPQR-tree node.
 ### V-line
 
 Declare an SPQR-tree edge between a pair of SPQR-tree nodes.
+Virtual edges exist only for blocks with at least three nodes.
 The SPQR-tree edge is between the two SPQR-tree nodes specified by the two `<S/P/R-node name>`s.
 Within these SPQR-tree nodes, the SPQR-tree edge connects to a virtual edge in their skeletons.
 This virtual edge is specified by its endpoints, the graph nodes specified by the two `<node name>`.
@@ -78,12 +85,13 @@ In this case, the SPQR tree is typically defined to contain parallel virtual edg
 ### E-line
 
 Declare a graph edge between a pair of graph nodes (i.e. a Q-node).
-The `<S/P/R-node name>` specifies the SPQR-tree node that contains this edge.
+Graph edges are either assigned to their containing SPQR-node, or to their containing block, if the block is too small to contain an SPQR tree.
+The `<S/P/R-node name OR block name>` specifies the SPQR-tree node or the block that contains this edge.
 The `<node name>`s are the endpoints of the edge.
 After one space after the last node name, there can be an arbitrary string (except for # and newline characters).
 This may be used to add e.g. metadata to the edge.
 
-`E <edge name> <S/P/R-node name> <node name> <node name> [optional extra data]`
+`E <edge name> <S/P/R-node name OR block name> <node name> <node name> [optional extra data]`
 
 ## Format for extra data
 
@@ -99,7 +107,7 @@ Type | Description | Example
 `dgfa` | Sign of a bidirected edge incidence in GFA format (see below) | `E E0 P0 B0 N1 N2 N1:dgfa:+ N2:dgfa:+`
 <nobr>`s`</nobr> | String without spaces | `seq:s:ACTGTGAACC`
 <nobr>`s:<len>`</nobr> | String of length `<len>` bytes (spaces allowed) | `comment:s:16:SPQR trees rock!`
-`b64` | Base64 encoded binary blob | `data:b64:U1BRUiB0cmVlcyByb2NrIQ==`
+`b64` | Base64 encoded binary data | `data:b64:U1BRUiB0cmVlcyByb2NrIQ==`
 
 ### Reserved keys
 
@@ -136,11 +144,16 @@ B B1 G0 N0 N5 # Declare a block B1 inside component G0 containing graph nodes N0
 B B2 G0 N0 N6 # Declare a block B2 inside component G0 containing graph nodes N0 and N6
 C N0 B0 B1 B2 # Declare that N0 is a cut node that connects blocks B0, B1 and B2
 
+# Edges in 2-connected components with at most two nodes
+E E0 B1 N0 N5 # Declare a graph edge E0 inside block B1 and between graph nodes N0 and N5
+
 # 3-connected components
 S S0 B0 N0 N1 N2 # Declare an S-node inside B0 containing graph nodes N0, N1 and N2
 P P0 B0 N0 N1 # Declare a P-node inside B0 containing graph nodes N0 and N1
 R R0 B0 N1 N2 N3 N4 # Declare an R-node inside B0 containing graph nodes N1, N2, N3 and N4
 V V0 S0 P0 N0 N1 # Declare a virtual edge V0 connecting SPQR-nodes S0 and P0 between graph nodes N0 and N1
-E E0 P0 N1 N2 # Declare a graph edge E0 inside SPQR-node P0 and between graph nodes N1 and N2
-E E1 P0 N2 N0 N2:d:- N0:d:+ seq:s:AAGATA # Declare a graph edge E1 with extra data
+
+# Edges in 3-connected components
+E E1 P0 N1 N2 # Declare a graph edge E1 inside SPQR-node P0 and between graph nodes N1 and N2
+E E2 P0 N2 N0 N2:d:- N0:d:+ seq:s:AAGATA # Declare a graph edge E2 with extra data
 ```
