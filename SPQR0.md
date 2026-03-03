@@ -1,4 +1,4 @@
-# SPQR tree file format `.spqr` v0.3
+# SPQR tree file format `.spqr` v0.4
 
 ## Basics
 * When a line contains a #, then the rest of it is ignored
@@ -9,6 +9,7 @@
 * Connected components with only a single node contain no blocks or cut nodes
 * Blocks with at most two nodes contain no SPQR nodes or virtual edges
 * Edges in blocks with at most two nodes are assigned to their block instead of their containing SPQR node
+* Edges in components with one node are assigned to their component instead of their containing SPQR node or block
 
 ## Design decisions
 * Plain text to be bioinformatics-ready
@@ -24,7 +25,7 @@ A `...` in examples specifies that the previous identifier type can occur multip
 Each `.spqr` file has exactly one header line.
 It specifies the file format version, as well as a URL pointing to the format specification at that version.
 
-`H v0.3 https://github.com/sebschmi/SPQR-tree-file-format [optional extra data]`
+`H v0.4 https://github.com/sebschmi/SPQR-tree-file-format [optional extra data]`
 
 ### G-line
 
@@ -85,13 +86,13 @@ In this case, the SPQR tree is typically defined to contain parallel virtual edg
 ### E-line
 
 Declare a graph edge between a pair of graph nodes (i.e. a Q-node).
-Graph edges are either assigned to their containing SPQR-node, or to their containing block, if the block is too small to contain an SPQR tree.
-The `<S/P/R-node name OR block name>` specifies the SPQR-tree node or the block that contains this edge.
+Graph edges are either assigned to their containing SPQR-node, or to their containing block, if the block is too small to contain an SPQR tree, or to their containing component, if the component is too small to contain a BC tree.
+The `<S/P/R-node name OR block name OR component name>` specifies the SPQR-tree node, the block or the component that contains this edge.
 The `<node name>`s are the endpoints of the edge.
 After one space after the last node name, there can be an arbitrary string (except for # and newline characters).
 This may be used to add e.g. metadata to the edge.
 
-`E <edge name> <S/P/R-node name OR block name> <node name> <node name> [optional extra data]`
+`E <edge name> <S/P/R-node name OR block name OR component name> <node name> <node name> [optional extra data]`
 
 ## Format for extra data
 
@@ -132,11 +133,15 @@ See the [GFA1 specification](https://gfa-spec.github.io/GFA-spec/GFA1.html#l-lin
 
 ```spqr
 # Header
-H v0.2 https://github.com/sebschmi/SPQR-tree-file-format # The header line specifies the version of the file format and a URL pointing to a description of the format at this version
+H v0.4 https://github.com/sebschmi/SPQR-tree-file-format # The header line specifies the version of the file format and a URL pointing to a description of the format at this version
 
 # 1-connected components
 G G0 N0 N1 N2 N3 N4 N5 N6 # Declare a component G0 containing graph nodes N0-N6
+G G1 N7
 N N3 seq:s:GGCTA weight:f:3.14 # Attach extra data to graph node N3
+
+# Edges in 1-connected components with one node
+E E0 G1 N7 N7 # Declare a graph edge E0 inside component G1 and as a self-loop at node N7
 
 # 2-connected components
 B B0 G0 N0 N1 N2 N3 N4 # Declare a block B0 inside component G0 containing graph nodes N0-N4
@@ -145,7 +150,7 @@ B B2 G0 N0 N6 # Declare a block B2 inside component G0 containing graph nodes N0
 C N0 B0 B1 B2 # Declare that N0 is a cut node that connects blocks B0, B1 and B2
 
 # Edges in 2-connected components with at most two nodes
-E E0 B1 N0 N5 # Declare a graph edge E0 inside block B1 and between graph nodes N0 and N5
+E E1 B1 N0 N5 # Declare a graph edge E1 inside block B1 and between graph nodes N0 and N5
 
 # 3-connected components
 S S0 B0 N0 N1 N2 # Declare an S-node inside B0 containing graph nodes N0, N1 and N2
@@ -154,6 +159,6 @@ R R0 B0 N1 N2 N3 N4 # Declare an R-node inside B0 containing graph nodes N1, N2,
 V V0 S0 P0 N0 N1 # Declare a virtual edge V0 connecting SPQR-nodes S0 and P0 between graph nodes N0 and N1
 
 # Edges in 3-connected components
-E E1 P0 N1 N2 # Declare a graph edge E1 inside SPQR-node P0 and between graph nodes N1 and N2
-E E2 P0 N2 N0 N2:d:- N0:d:+ seq:s:AAGATA # Declare a graph edge E2 with extra data
+E E2 P0 N1 N2 # Declare a graph edge E2 inside SPQR-node P0 and between graph nodes N1 and N2
+E E3 P0 N2 N0 N2:d:- N0:d:+ seq:s:AAGATA # Declare a graph edge E3 with extra data
 ```
